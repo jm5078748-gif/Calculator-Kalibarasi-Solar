@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perhitungan Bejana Ukur BBM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%);
+    }
+    .card-glass {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+    }
+    .input-field {
+      transition: all 0.3s ease;
+    }
+    .input-field:focus {
+      transform: scale(1.02);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    }
+    .result-card {
+      animation: fadeIn 0.5s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fuel-icon {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full gradient-bg">
+  <div id="app-container" class="h-full overflow-auto p-4 md:p-6">
+   <div class="max-w-4xl mx-auto"><!-- Header -->
+    <div class="text-center mb-6">
+     <div class="inline-flex items-center justify-center w-16 h-16 bg-amber-500 rounded-2xl mb-4 fuel-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-white" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+      </svg>
+     </div>
+     <h1 id="app-title" class="text-2xl md:text-3xl font-bold text-white mb-2">Perhitungan Bejana Ukur BBM</h1>
+     <p id="app-subtitle" class="text-blue-200">Sistem Kalibrasi &amp; Verifikasi Volume</p>
+    </div><!-- Referensi Input -->
+    <div class="card-glass rounded-2xl p-5 mb-5 shadow-xl">
+     <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"><span class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+       </svg></span> Pengaturan Referensi</h2>
+     <div class="grid grid-cols-1 gap-4">
+      <div><label class="block text-sm font-medium text-gray-600 mb-2">Sample Liter (Referensi Flow Meter)</label>
+       <div class="relative"><input type="number" id="sampleLiter" value="20" min="1" step="0.001" class="input-field w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-gray-800 font-semibold"> <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">Liter</span>
+       </div>
+       <div class="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div class="flex items-center justify-between"><span class="text-xs text-blue-600 font-medium">Konversi:</span> <span id="konversiML" class="text-sm font-bold text-blue-700">20,000 mL</span>
+        </div>
+       </div>
+       <p class="text-xs text-gray-500 mt-1">Volume yang ditunjukkan flow meter</p>
+      </div>
+     </div>
+    </div><!-- Kalkulator Wadah Kapasitas -->
+    <div class="card-glass rounded-2xl p-5 mb-5 shadow-xl">
+     <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"><span class="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
+       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+       </svg></span> Kalkulator Wadah Kapasitas</h2>
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div><label class="block text-xs font-medium text-gray-600 mb-2">Kapasitas Wadah</label>
+       <div class="relative"><input type="number" id="kapasitasWadah" value="1000" min="1" step="1" class="input-field w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:border-amber-500 focus:outline-none text-gray-800 font-semibold"> <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">mL</span>
+       </div>
+       <div class="mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200">
+        <div class="flex items-center justify-between"><span class="text-xs text-amber-600 font-medium">= </span> <span id="konversiKapasitas" class="text-xs font-bold text-amber-700">1.000 L</span>
+        </div>
+       </div>
+      </div>
+      <div><label class="block text-xs font-medium text-gray-600 mb-2">Isi di Wadah</label>
+       <div class="relative"><input type="number" id="isiWadah" value="500" min="0" step="1" class="input-field w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:border-amber-500 focus:outline-none text-gray-800 font-semibold"> <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">mL</span>
+       </div>
+       <div class="mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200">
+        <div class="flex items-center justify-between"><span class="text-xs text-amber-600 font-medium">= </span> <span id="konversiIsi" class="text-xs font-bold text-amber-700">0.500 L</span>
+        </div>
+       </div>
+      </div>
+      <div><label class="block text-xs font-medium text-gray-600 mb-2">Kurangnya</label>
+       <div class="relative"><input type="text" id="hasilKalkulator" value="500" readonly class="w-full px-3 py-2.5 border-2 border-emerald-200 bg-emerald-50 rounded-xl text-gray-800 font-bold text-center"> <span class="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 text-sm font-semibold">mL</span>
+       </div>
+      </div>
+     </div>
+     <div class="mt-4 text-center">
+      <p class="text-xs text-gray-500 mb-2">Pilih perhitungan untuk copy hasil:</p>
+      <div class="flex justify-center gap-2"><button onclick="copyToHasil(1)" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold rounded-lg shadow-sm transform hover:scale-105 transition-all duration-300 flex items-center gap-1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg> Copy #1 </button> <button onclick="copyToHasil(2)" class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-lg shadow-sm transform hover:scale-105 transition-all duration-300 flex items-center gap-1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg> Copy #2 </button> <button onclick="copyToHasil(3)" class="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-xs font-semibold rounded-lg shadow-sm transform hover:scale-105 transition-all duration-300 flex items-center gap-1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg> Copy #3 </button>
+      </div>
+     </div>
+    </div><!-- Perhitungan 1, 2, 3 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5"><!-- Perhitungan 1 -->
+     <div class="card-glass rounded-2xl p-5 shadow-xl">
+      <div class="flex items-center gap-2 mb-4"><span class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-white font-bold">1</span>
+       <h3 class="font-semibold text-gray-800">Perhitungan Pertama</h3>
+      </div>
+      <div class="space-y-3">
+       <div><label class="block text-xs font-medium text-gray-500 mb-1">Penambahan (mL)</label>
+        <div class="relative"><input type="number" id="hasil1" value="" min="0" step="1" placeholder="0" class="input-field w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none text-gray-800"> <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">mL</span>
+        </div>
+       </div>
+       <div id="result1" class="hidden">
+        <div class="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-xl p-3 result-card">
+         <div class="flex justify-between items-center mb-1"><span class="text-xs text-gray-500">Aktual di Bejana:</span> <span id="bejana1" class="font-bold text-emerald-600">-</span>
+         </div>
+         <div class="flex justify-between items-center mb-2"><span class="text-xs text-gray-400 pl-4">= </span> <span id="bejana1ML" class="text-xs font-semibold text-emerald-500">-</span>
+         </div>
+         <div class="flex justify-between items-center mb-2"><span class="text-xs text-gray-500">Penambahan:</span> <span id="tambah1" class="font-bold text-amber-600">-</span>
+         </div>
+         <div class="flex justify-between items-center mb-1"><span class="text-xs text-gray-500">Selisih:</span> <span id="selisih1" class="font-bold text-purple-600">-</span>
+         </div>
+         <div class="flex justify-between items-center mb-2"><span class="text-xs text-gray-400 pl-4">= </span> <span id="selisih1ML" class="text-xs font-semibold text-purple-500">-</span>
+         </div>
+         <div class="flex justify-between items-center pt-2 border-t border-gray-200"><span class="text-xs text-gray-500">Status:</span> <span id="status1" class="text-xs font-semibold px-2 py-1 rounded-full">-</span>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Perhitungan 2 -->
+     <div class="card-glass rounded-2xl p-5 shadow-xl">
+      <div class="flex items-center gap-2 mb-4"><span class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold">2</span>
+       <h3 class="font-semibold text-gray-800">Perhitungan Kedua</h3>
+      </div>
+      <div class="space-y-3">
+       <div><label class="block text-xs font-medium text-gray-500 mb-1">Penambahan (mL)</label>
+        <div class="relative"><input type="number" id="hasil2" value="" min="0" step="1" placeholder="0" class="input-field w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none text-gray-800"> <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">mL</span>
+        </div>
+       </div>
+       <div id="result2" class="hidden">
+        <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-3 result-card">
+         <div class="flex justify-between items-center mb-1"><span class="text-xs text-gray-500">Aktual di Bejana:</span> <span id="bejana2" class="font-bold text-blue-600">-</span>
+         </div>
+         <div class="flex justify-between items-center mb-2"><span class="text-xs text-gray-400 pl-4">= </span> <span id="bejana2ML" class="text-xs font-semibold text-blue-500">-</span>
+         </div>
+         <div class="flex justify-between items-center mb-2"><span class="text-xs text-gray-500">Penambahan:</span> <span id="tambah2" class="font-bold text-amber-600">-</span>
+         </div>
+         <div class="flex justify-between items-center mb-1"><span class="text-xs text-gray-500">Selisih:</span> <span id="selisih2" class="font-bold text-purple-600">-</span>
+         </div>
+         <div class="flex justify-between items-center mb-2"><span class="text-xs text-gray-400 pl-4">= </span> <span id="selisih2ML" class="text-xs font-semibold text-purple-500">-</span>
+         </div>
+         <div class="flex justify-between items-center pt-2 border-t border-gray-200"><span class="text-xs text-gray-500">Status:</span> <span id="status2" class="text-xs font-semibold px-2 py-1 rounded-full">-</span>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Perhitungan 3 -->
+     <div class="card-glass rounded-2xl p-5 shadow-xl">
+      <div class="flex items-center gap-2 mb-4"><span class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center text-white font-bold">3</span>
+       <h3 class="font-semibold text-gray-800">Perhitungan Ketiga</h3>
+      </div>
+      <div class="space-y-3">
+       <div><label class="block text-xs font-medium text-gray-500 mb-1">Penambahan (mL)</label>
+        <div class="relative"><input type="number" id="hasil3" value="" min="0" step="1" placeholder="0" class="input-field w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none text-gray-800"> <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">mL</span>
+        </div>
+       </div>
+       <div id="result3" class="hidden">
+        <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-3 result-card">
+         <div class="flex justify-between items-center mb-1"><span class="text-xs text-gray-500">Aktual di Bejana:</span> <span id="bejana3" class="font-bold text-purple-600">-</span>
+         </div>
+         <div class="flex justify-between items-center mb-2"><span class="text-xs text-gray-400 pl-4">= </span> <span id="bejana3ML" class="text-xs font-semibold text-purple-500">-</span>
+         </div>
+         <div class="flex justify-between items-center mb-2"><span class="text-xs text-gray-500">Penambahan:</span> <span id="tambah3" class="font-bold text-amber-600">-</span>
+         </div>
+         <div class="flex justify-between items-center mb-1"><span class="text-xs text-gray-500">Selisih:</span> <span id="selisih3" class="font-bold text-purple-600">-</span>
+         </div>
+         <div class="flex justify-between items-center mb-2"><span class="text-xs text-gray-400 pl-4">= </span> <span id="selisih3ML" class="text-xs font-semibold text-purple-500">-</span>
+         </div>
+         <div class="flex justify-between items-center pt-2 border-t border-gray-200"><span class="text-xs text-gray-500">Status:</span> <span id="status3" class="text-xs font-semibold px-2 py-1 rounded-full">-</span>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Tombol Hitung -->
+    <div class="flex justify-center gap-4 mb-5"><button id="btnHitung" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+      </svg> Hitung Semua </button> <button id="btnReset" class="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg> Reset </button> <button id="btnExport" class="px-8 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center gap-2 hidden">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg> Download Excel </button>
+    </div><!-- Laporan Ringkasan -->
+    <div id="summarySection" class="hidden card-glass rounded-2xl p-5 shadow-xl">
+     <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"><span class="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
+       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+       </svg></span> Laporan Ringkasan</h2>
+     <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+       <thead>
+        <tr class="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+         <th class="px-4 py-3 rounded-tl-xl text-left">Pengukuran</th>
+         <th class="px-4 py-3 text-center">Flow Meter</th>
+         <th class="px-4 py-3 text-center">Penambahan</th>
+         <th class="px-4 py-3 text-center">Aktual Bejana</th>
+         <th class="px-4 py-3 text-center">Selisih</th>
+         <th class="px-4 py-3 rounded-tr-xl text-center">Status</th>
+        </tr>
+       </thead>
+       <tbody id="summaryBody" class="divide-y divide-gray-100"><!-- Data akan diisi oleh JavaScript -->
+       </tbody>
+      </table>
+     </div>
+     <div class="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+       <div>
+        <p class="text-xs text-gray-500">Total Flow Meter</p>
+        <p id="totalRef" class="text-lg font-bold text-blue-600">-</p>
+       </div>
+       <div>
+        <p class="text-xs text-gray-500">Total Penambahan</p>
+        <p id="totalTambah" class="text-lg font-bold text-amber-600">-</p>
+       </div>
+       <div>
+        <p class="text-xs text-gray-500">Total Aktual Bejana</p>
+        <p id="totalBejana" class="text-lg font-bold text-emerald-600">-</p>
+       </div>
+       <div>
+        <p class="text-xs text-gray-500">Rata-rata Akurasi</p>
+        <p id="avgAkurasi" class="text-lg font-bold text-purple-600">-</p>
+       </div>
+      </div>
+     </div>
+    </div><!-- Footer -->
+    <div class="text-center mt-6 mb-4">
+     <div class="card-glass rounded-xl p-4 shadow-lg inline-block">
+      <div class="flex items-center gap-3">
+       <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-amber-500" fill="none" viewbox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+       </svg>
+       <div class="text-left">
+        <p class="text-xs text-gray-500">Ide &amp; Konsep dari</p>
+        <p class="text-sm font-bold text-gray-800">Amrullah BMDP 34</p>
+       </div>
+      </div>
+     </div>
+     <p class="text-blue-200 text-xs mt-3">© 2026 Sistem Kalibrasi Bejana Ukur BBM</p>
+    </div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      app_title: 'Perhitungan Bejana Ukur BBM',
+      subtitle: 'Sistem Kalibrasi & Verifikasi Volume',
+      primary_color: '#1e3a5f',
+      accent_color: '#f59e0b',
+      text_color: '#1f2937'
+    };
+
+    let config = { ...defaultConfig };
+
+    function calculateMeasurement(penambahanML, sampleLiter) {
+      const penambahan = parseFloat(penambahanML) || 0;
+      const sample = parseFloat(sampleLiter) || 20;
+      
+      // Konversi penambahan dari mL ke Liter
+      const penambahanL = penambahan / 1000;
+      
+      // Hitung aktual di bejana: Flow Meter - Penambahan
+      const aktualBejana = sample - penambahanL;
+      
+      // Hitung selisih (flow meter vs aktual bejana)
+      const selisih = sample - aktualBejana;
+      
+      let status = '';
+      let statusClass = '';
+      
+      if (penambahan === 0 && sample > 0) {
+        status = 'SEMPURNA';
+        statusClass = 'bg-emerald-100 text-emerald-700';
+      } else if (penambahan > 0) {
+        status = 'ADA SELISIH';
+        statusClass = 'bg-amber-100 text-amber-700';
+      } else {
+        status = 'BELUM DIISI';
+        statusClass = 'bg-gray-100 text-gray-500';
+      }
+      
+      return {
+        aktualBejana: aktualBejana,
+        penambahan: penambahanL,
+        penambahanML: penambahan,
+        selisih: selisih,
+        status: status,
+        statusClass: statusClass,
+        akurasi: sample > 0 ? ((aktualBejana / sample) * 100).toFixed(2) : 0
+      };
+    }
+
+    function formatNumber(num, decimals = 2) {
+      return num.toFixed(decimals).replace('.', ',');
+    }
+
+    function updateResult(num, result) {
+      const resultDiv = document.getElementById(`result${num}`);
+      const bejanaSpan = document.getElementById(`bejana${num}`);
+      const bejanaMLSpan = document.getElementById(`bejana${num}ML`);
+      const tambahSpan = document.getElementById(`tambah${num}`);
+      const selisihSpan = document.getElementById(`selisih${num}`);
+      const selisihMLSpan = document.getElementById(`selisih${num}ML`);
+      const statusSpan = document.getElementById(`status${num}`);
+      
+      if (result.penambahanML >= 0) {
+        resultDiv.classList.remove('hidden');
+        bejanaSpan.textContent = `${formatNumber(result.aktualBejana)} L`;
+        bejanaMLSpan.textContent = `${formatNumber(result.aktualBejana * 1000)} mL`;
+        tambahSpan.textContent = `${formatNumber(result.penambahanML)} mL`;
+        selisihSpan.textContent = `${formatNumber(result.selisih)} L`;
+        selisihMLSpan.textContent = `${formatNumber(result.selisih * 1000)} mL`;
+        statusSpan.textContent = result.status;
+        statusSpan.className = `text-xs font-semibold px-2 py-1 rounded-full ${result.statusClass}`;
+      } else {
+        resultDiv.classList.add('hidden');
+      }
+    }
+
+    function calculateAll() {
+      const sampleLiter = parseFloat(document.getElementById('sampleLiter').value) || 20;
+      
+      // Update konversi mL di referensi
+      const konversiMLSpan = document.getElementById('konversiML');
+      konversiMLSpan.textContent = `${(sampleLiter * 1000).toLocaleString('id-ID')} mL`;
+      
+      const results = [];
+      let totalBejana = 0;
+      let totalTambah = 0;
+      let validCount = 0;
+      let totalAkurasi = 0;
+      
+      for (let i = 1; i <= 3; i++) {
+        const penambahanInput = document.getElementById(`hasil${i}`).value;
+        const result = calculateMeasurement(penambahanInput, sampleLiter);
+        updateResult(i, result);
+        
+        if (penambahanInput !== '') {
+          results.push({
+            num: i,
+            ...result,
+            sampleLiter: sampleLiter
+          });
+          totalBejana += result.aktualBejana;
+          totalTambah += result.penambahan;
+          totalAkurasi += parseFloat(result.akurasi);
+          validCount++;
+        }
+      }
+      
+      if (validCount > 0) {
+        updateSummary(results, sampleLiter, totalBejana, totalTambah, totalAkurasi / validCount, validCount);
+      }
+    }
+
+    let currentResults = []; // Simpan hasil untuk export
+
+    function updateSummary(results, sampleLiter, totalBejana, totalTambah, avgAkurasi, validCount) {
+      const summarySection = document.getElementById('summarySection');
+      const summaryBody = document.getElementById('summaryBody');
+      const btnExport = document.getElementById('btnExport');
+      
+      summarySection.classList.remove('hidden');
+      btnExport.classList.remove('hidden'); // Tampilkan tombol export
+      
+      // Simpan hasil untuk export
+      currentResults = results;
+      
+      let tableHTML = '';
+      results.forEach((r, idx) => {
+        const bgClass = idx % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+        tableHTML += `
+          <tr class="${bgClass}">
+            <td class="px-4 py-3 font-medium text-gray-800">Pengukuran ${r.num}</td>
+            <td class="px-4 py-3 text-center text-blue-600 font-semibold">${formatNumber(r.sampleLiter)} L</td>
+            <td class="px-4 py-3 text-center text-amber-600 font-semibold">${formatNumber(r.penambahanML)} mL</td>
+            <td class="px-4 py-3 text-center text-emerald-600 font-semibold">${formatNumber(r.aktualBejana)} L</td>
+            <td class="px-4 py-3 text-center text-purple-600 font-semibold">${formatNumber(r.selisih)} L</td>
+            <td class="px-4 py-3 text-center">
+              <span class="text-xs font-semibold px-2 py-1 rounded-full ${r.statusClass}">${r.status}</span>
+            </td>
+          </tr>
+        `;
+      });
+      
+      summaryBody.innerHTML = tableHTML;
+      
+      document.getElementById('totalRef').textContent = `${formatNumber(sampleLiter * validCount)} L`;
+      document.getElementById('totalTambah').textContent = `${formatNumber(totalTambah * 1000)} mL`;
+      document.getElementById('totalBejana').textContent = `${formatNumber(totalBejana)} L`;
+      document.getElementById('avgAkurasi').textContent = `${formatNumber(avgAkurasi)}%`;
+    }
+
+    function resetAll() {
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById(`hasil${i}`).value = '';
+        document.getElementById(`result${i}`).classList.add('hidden');
+      }
+      document.getElementById('summarySection').classList.add('hidden');
+      document.getElementById('btnExport').classList.add('hidden');
+      currentResults = [];
+    }
+
+    function exportToExcel() {
+      if (currentResults.length === 0) {
+        return;
+      }
+
+      const sampleLiter = parseFloat(document.getElementById('sampleLiter').value) || 20;
+      
+      // Hitung total
+      let totalBejana = 0;
+      let totalTambah = 0;
+      let totalAkurasi = 0;
+      currentResults.forEach(r => {
+        totalBejana += r.aktualBejana;
+        totalTambah += r.penambahan;
+        totalAkurasi += parseFloat(r.akurasi);
+      });
+      const avgAkurasi = totalAkurasi / currentResults.length;
+
+      // Buat tanggal dan waktu saat ini
+      const now = new Date();
+      const tanggal = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const waktu = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+      // Header Excel dengan informasi
+      let csv = 'LAPORAN KALIBRASI BEJANA UKUR BBM\n';
+      csv += `Tanggal Export: ${tanggal} ${waktu}\n`;
+      csv += `Sample Flow Meter: ${sampleLiter} L\n`;
+      csv += '\n';
+      
+      // Header tabel
+      csv += 'No,Pengukuran,Flow Meter (L),Penambahan (mL),Aktual Bejana (L),Selisih (L),Akurasi (%),Status\n';
+      
+      // Data
+      currentResults.forEach((r, idx) => {
+        csv += `${idx + 1},Pengukuran ${r.num},${formatNumber(r.sampleLiter)},${formatNumber(r.penambahanML)},${formatNumber(r.aktualBejana)},${formatNumber(r.selisih)},${formatNumber(parseFloat(r.akurasi))},${r.status}\n`;
+      });
+      
+      // Total dan ringkasan
+      csv += '\n';
+      csv += 'RINGKASAN\n';
+      csv += `Total Flow Meter,${formatNumber(sampleLiter * currentResults.length)} L\n`;
+      csv += `Total Penambahan,${formatNumber(totalTambah * 1000)} mL\n`;
+      csv += `Total Aktual Bejana,${formatNumber(totalBejana)} L\n`;
+      csv += `Rata-rata Akurasi,${formatNumber(avgAkurasi)}%\n`;
+      csv += '\n';
+      csv += 'Ide & Konsep: Amrullah BMDP 34\n';
+      csv += '© 2026 Sistem Kalibrasi Bejana Ukur BBM\n';
+
+      // Buat blob dan download
+      const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      const fileName = `Laporan_Kalibrasi_BBM_${tanggal.replace(/\//g, '-')}_${waktu.replace(/:/g, '')}.csv`;
+      link.setAttribute('href', url);
+      link.setAttribute('download', fileName);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // LocalStorage Functions
+    function saveToLocalStorage() {
+      const data = {
+        sampleLiter: document.getElementById('sampleLiter').value,
+        hasil1: document.getElementById('hasil1').value,
+        hasil2: document.getElementById('hasil2').value,
+        hasil3: document.getElementById('hasil3').value,
+        kapasitasWadah: document.getElementById('kapasitasWadah').value,
+        isiWadah: document.getElementById('isiWadah').value
+      };
+      localStorage.setItem('bbmKalibrasiData', JSON.stringify(data));
+    }
+
+    function loadFromLocalStorage() {
+      const savedData = localStorage.getItem('bbmKalibrasiData');
+      if (savedData) {
+        const data = JSON.parse(savedData);
+        document.getElementById('sampleLiter').value = data.sampleLiter || '20';
+        document.getElementById('hasil1').value = data.hasil1 || '';
+        document.getElementById('hasil2').value = data.hasil2 || '';
+        document.getElementById('hasil3').value = data.hasil3 || '';
+        document.getElementById('kapasitasWadah').value = data.kapasitasWadah || '1000';
+        document.getElementById('isiWadah').value = data.isiWadah || '500';
+        
+        // Trigger perhitungan untuk menampilkan hasil
+        updateKalkulator();
+        calculateAll();
+      }
+    }
+
+    function clearLocalStorage() {
+      localStorage.removeItem('bbmKalibrasiData');
+    }
+
+    document.getElementById('btnHitung').addEventListener('click', calculateAll);
+    document.getElementById('btnReset').addEventListener('click', () => {
+      resetAll();
+      clearLocalStorage();
+    });
+    document.getElementById('btnExport').addEventListener('click', exportToExcel);
+
+    // Auto-calculate on input change and save to localStorage
+    ['hasil1', 'hasil2', 'hasil3', 'sampleLiter'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
+        calculateAll();
+        saveToLocalStorage();
+      });
+    });
+
+    // Kalkulator Wadah Functions
+    function updateKalkulator() {
+      const kapasitasML = parseFloat(document.getElementById('kapasitasWadah').value) || 0;
+      const isiML = parseFloat(document.getElementById('isiWadah').value) || 0;
+      
+      // Hitung kurangnya dalam mL
+      const kurangML = kapasitasML - isiML;
+      
+      // Update hasil kalkulator
+      document.getElementById('hasilKalkulator').value = kurangML.toFixed(0);
+      
+      // Update konversi ke Liter (format sederhana tanpa trailing zeros)
+      const kapasitasL = kapasitasML / 1000;
+      const isiL = isiML / 1000;
+      document.getElementById('konversiKapasitas').textContent = `${kapasitasL} L`;
+      document.getElementById('konversiIsi').textContent = `${isiL} L`;
+    }
+
+    function copyToHasil(num) {
+      const hasilKalkulator = document.getElementById('hasilKalkulator').value;
+      const inputField = document.getElementById(`hasil${num}`);
+      
+      inputField.value = hasilKalkulator;
+      
+      // Trigger perhitungan otomatis
+      calculateAll();
+      
+      // Visual feedback
+      inputField.classList.add('ring-4', 'ring-emerald-300');
+      setTimeout(() => {
+        inputField.classList.remove('ring-4', 'ring-emerald-300');
+      }, 500);
+    }
+
+    // Event listeners untuk kalkulator dengan auto-save
+    document.getElementById('kapasitasWadah').addEventListener('input', () => {
+      updateKalkulator();
+      saveToLocalStorage();
+    });
+    document.getElementById('isiWadah').addEventListener('input', () => {
+      updateKalkulator();
+      saveToLocalStorage();
+    });
+
+    // Initialize: Load data dari localStorage dan update kalkulator
+    loadFromLocalStorage();
+    updateKalkulator();
+
+    // Element SDK Integration
+    async function onConfigChange(newConfig) {
+      const title = newConfig.app_title || defaultConfig.app_title;
+      const subtitle = newConfig.subtitle || defaultConfig.subtitle;
+      
+      document.getElementById('app-title').textContent = title;
+      document.getElementById('app-subtitle').textContent = subtitle;
+    }
+
+    function mapToCapabilities(cfg) {
+      return {
+        recolorables: [],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      };
+    }
+
+    function mapToEditPanelValues(cfg) {
+      return new Map([
+        ['app_title', cfg.app_title || defaultConfig.app_title],
+        ['subtitle', cfg.subtitle || defaultConfig.subtitle]
+      ]);
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c4c5cf090959de3',t:'MTc2OTU2MDAzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
